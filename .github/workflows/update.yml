@@ -2,7 +2,7 @@ name: Auto Update WinGo Result
 
 on:
   schedule:
-    - cron: '*/1 * * * *'  # প্রতি 1 মিনিটে রান হবে
+    - cron: '*/1 * * * *'
   workflow_dispatch:
 
 jobs:
@@ -17,30 +17,35 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install dependencies
+      - name: Install requests
         run: pip install requests
 
-      - name: Fetch API and Update result.json
+      - name: Fetch HGZY Result and Update result.json
         run: |
           python <<EOF
           import requests, json
           url = 'https://h5.ar-lottery01.com/api/Lottery/GetRecordPage?pageSize=1&pageNo=1&gameCode=WinGo_30S&language=en'
           r = requests.get(url)
-          data = r.json()
-          record = data['data']['records'][0]
-          result = {
-              "gameNo": record['gameNo'],
-              "color": record['color'],
-              "bigSmall": record['bigSmall']
-          }
-          with open('result.json', 'w') as f:
-              json.dump(result, f, indent=2)
+          if r.status_code == 200:
+              data = r.json()
+              record = data['data']['records'][0]
+              result = {
+                  "gameNo": record['gameNo'],
+                  "color": record['color'],
+                  "bigSmall": record['bigSmall'],
+                  "sum": record['sum'],
+                  "result": record['result']
+              }
+              with open('result.json', 'w') as f:
+                  json.dump(result, f, indent=2)
+          else:
+              print("API error:", r.status_code)
           EOF
 
-      - name: Commit changes
+      - name: Commit & Push result.json
         run: |
           git config user.name "Tayebul Bot"
           git config user.email "bot@tayebul.com"
           git add result.json
-          git commit -m "🔁 Auto update result.json" || echo "No changes to commit"
+          git commit -m "🔁 Auto update result.json" || echo "No changes"
           git push
