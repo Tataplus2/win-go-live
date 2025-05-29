@@ -1,5 +1,7 @@
 {
-  "gameNo": "20250530130100111",
+  "gameNo": "20250530142000789",
   "color": "GREEN",
-  "bigSmall": "Small"
+  "bigSmall": "Small",
+  "sum": 24,
+  "result": "2,4,3,7,8"
 }
